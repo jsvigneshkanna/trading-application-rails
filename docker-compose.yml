@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: database
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${DATABASE_PORT}:5432"
+
+  trading_api:
+    build: .
+    container_name: trading_api
+    command: bash -c "rm -f tmp/pids/server.pid && rails s -b 0.0.0.0 -p ${RAILS_PORT}"
+    volumes:
+      - .:/app
+    ports:
+      - "${RAILS_PORT}:${RAILS_PORT}"
+    depends_on:
+      - database
+    env_file:
+      - .env
+
+volumes:
+  pgdata:
