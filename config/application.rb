@@ -16,6 +16,5 @@ module TradingApplication
   class Application < Rails::Application
     config.load_defaults 5.2
     config.api_only = true
-    config.active_storage.service = :local
   end
 end
