@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/Dockerfile">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/Dockerfile" />
+              <option name="originalContent" value="# syntax=docker/dockerfile:1&#10;# check=error=true&#10;&#10;# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:&#10;# docker build -t crypto_exchange .&#10;# docker run -d -p 80:80 -e RAILS_MASTER_KEY=&lt;value from config/master.key&gt; --name crypto_exchange crypto_exchange&#10;&#10;# For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html&#10;&#10;# Make sure RUBY_VERSION matches the Ruby version in .ruby-version&#10;ARG RUBY_VERSION=3.4.5&#10;FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base&#10;&#10;# Rails app lives here&#10;WORKDIR /rails&#10;&#10;# Install base packages&#10;RUN apt-get update -qq &amp;&amp; \&#10;    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 &amp;&amp; \&#10;    rm -rf /var/lib/apt/lists /var/cache/apt/archives&#10;&#10;# Set production environment&#10;ENV RAILS_ENV=&quot;production&quot; \&#10;    BUNDLE_DEPLOYMENT=&quot;1&quot; \&#10;    BUNDLE_PATH=&quot;/usr/local/bundle&quot; \&#10;    BUNDLE_WITHOUT=&quot;development&quot;&#10;&#10;# Throw-away build stage to reduce size of final image&#10;FROM base AS build&#10;&#10;# Install packages needed to build gems&#10;RUN apt-get update -qq &amp;&amp; \&#10;    apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config &amp;&amp; \&#10;    rm -rf /var/lib/apt/lists /var/cache/apt/archives&#10;&#10;# Install application gems&#10;COPY Gemfile Gemfile.lock ./&#10;RUN bundle install &amp;&amp; \&#10;    rm -rf ~/.bundle/ &quot;${BUNDLE_PATH}&quot;/ruby/*/cache &quot;${BUNDLE_PATH}&quot;/ruby/*/bundler/gems/*/.git &amp;&amp; \&#10;    bundle exec bootsnap precompile --gemfile&#10;&#10;# Copy application code&#10;COPY . .&#10;&#10;# Precompile bootsnap code for faster boot times&#10;RUN bundle exec bootsnap precompile app/ lib/&#10;&#10;&#10;&#10;&#10;# Final stage for app image&#10;FROM base&#10;&#10;# Copy built artifacts: gems, application&#10;COPY --from=build &quot;${BUNDLE_PATH}&quot; &quot;${BUNDLE_PATH}&quot;&#10;COPY --from=build /rails /rails&#10;&#10;# Run and own only the runtime files as a non-root user for security&#10;RUN groupadd --system --gid 1000 rails &amp;&amp; \&#10;    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash &amp;&amp; \&#10;    chown -R rails:rails db log storage tmp&#10;USER 1000:1000&#10;&#10;# Entrypoint prepares the database.&#10;ENTRYPOINT [&quot;/rails/bin/docker-entrypoint&quot;]&#10;&#10;# Start server via Thruster by default, this can be overwritten at runtime&#10;EXPOSE 80&#10;CMD [&quot;./bin/thrust&quot;, &quot;./bin/rails&quot;, &quot;server&quot;]&#10;" />
+              <option name="updatedContent" value="# syntax=docker/dockerfile:1&#10;# check=error=true&#10;&#10;# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:&#10;# docker build -t crypto_exchange .&#10;# docker run -d -p 80:80 -e RAILS_MASTER_KEY=&lt;value from config/master.key&gt; --name crypto_exchange crypto_exchange&#10;&#10;# For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html&#10;&#10;# Make sure RUBY_VERSION matches the Ruby version in .ruby-version&#10;ARG RUBY_VERSION=3.4.5&#10;FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base&#10;&#10;# Rails app lives here&#10;WORKDIR /rails&#10;&#10;# Install base packages&#10;RUN apt-get update -qq &amp;&amp; \&#10;    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 &amp;&amp; \&#10;    rm -rf /var/lib/apt/lists /var/cache/apt/archives&#10;&#10;# Development image&#10;FROM base AS development&#10;&#10;# Install development packages&#10;RUN apt-get update -qq &amp;&amp; \&#10;    apt-get install --no-install-recommends -y build-essential git pkg-config libyaml-dev &amp;&amp; \&#10;    rm -rf /var/lib/apt/lists /var/cache/apt/archives&#10;&#10;# Configure bundler&#10;ENV BUNDLE_PATH=/usr/local/bundle \&#10;    BUNDLE_WITHOUT=&quot;&quot; \&#10;    BUNDLE_DEPLOYMENT=&quot;&quot;&#10;&#10;# Install gems&#10;COPY Gemfile Gemfile.lock ./&#10;RUN bundle install&#10;&#10;# Throw-away build stage to reduce size of final image&#10;FROM base AS build&#10;&#10;# Install packages needed to build gems&#10;RUN apt-get update -qq &amp;&amp; \&#10;    apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config &amp;&amp; \&#10;    rm -rf /var/lib/apt/lists /var/cache/apt/archives&#10;&#10;# Install application gems&#10;COPY Gemfile Gemfile.lock ./&#10;RUN bundle install &amp;&amp; \&#10;    rm -rf ~/.bundle/ &quot;${BUNDLE_PATH}&quot;/ruby/*/cache &quot;${BUNDLE_PATH}&quot;/ruby/*/bundler/gems/*/.git &amp;&amp; \&#10;    bundle exec bootsnap precompile --gemfile&#10;&#10;# Copy application code&#10;COPY . .&#10;&#10;# Precompile bootsnap code for faster boot times&#10;RUN bundle exec bootsnap precompile app/ lib/&#10;&#10;&#10;&#10;&#10;# Final stage for app image&#10;FROM base&#10;&#10;# Copy built artifacts: gems, application&#10;COPY --from=build &quot;${BUNDLE_PATH}&quot; &quot;${BUNDLE_PATH}&quot;&#10;COPY --from=build /rails /rails&#10;&#10;# Run and own only the runtime files as a non-root user for security&#10;RUN groupadd --system --gid 1000 rails &amp;&amp; \&#10;    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash &amp;&amp; \&#10;    chown -R rails:rails db log storage tmp&#10;USER 1000:1000&#10;&#10;# Entrypoint prepares the database.&#10;ENTRYPOINT [&quot;/rails/bin/docker-entrypoint&quot;]&#10;&#10;# Start server via Thruster by default, this can be overwritten at runtime&#10;EXPOSE 80&#10;CMD [&quot;./bin/thrust&quot;, &quot;./bin/rails&quot;, &quot;server&quot;]" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/Gemfile">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/Gemfile" />
+              <option name="originalContent" value="source &quot;https://rubygems.org&quot;&#10;&#10;# Bundle edge Rails instead: gem &quot;rails&quot;, github: &quot;rails/rails&quot;, branch: &quot;main&quot;&#10;gem &quot;rails&quot;, &quot;~&gt; 8.0.2&quot;&#10;# Use sqlite3 as the database for Active Record&#10;gem &quot;sqlite3&quot;, &quot;&gt;= 2.1&quot;&#10;# Use the Puma web server [https://github.com/puma/puma]&#10;gem &quot;puma&quot;, &quot;&gt;= 5.0&quot;&#10;&#10;# Windows does not include zoneinfo files, so bundle the tzinfo-data gem&#10;gem &quot;tzinfo-data&quot;, platforms: %i[ mingw mswin x64_mingw jruby ]&#10;&#10;# Use the database-backed adapters for Rails.cache, Active Job, and Action Cable&#10;gem &quot;solid_cache&quot;&#10;gem &quot;solid_queue&quot;&#10;gem &quot;solid_cable&quot;&#10;&#10;# Reduces boot times through caching; required in config/boot.rb&#10;gem &quot;bootsnap&quot;, require: false&#10;&#10;# Deploy this application anywhere as a Docker container [https://kamal-deploy.org]&#10;gem &quot;kamal&quot;, require: false&#10;&#10;# Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]&#10;gem &quot;thruster&quot;, require: false&#10;&#10;# Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]&#10;# gem &quot;image_processing&quot;, &quot;~&gt; 1.2&quot;&#10;&#10;# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible&#10;# gem &quot;rack-cors&quot;&#10;&#10;group :development, :test do&#10;  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem&#10;  gem &quot;debug&quot;, platforms: %i[ mri windows ], require: &quot;debug/prelude&quot;&#10;&#10;  # Static analysis for security vulnerabilities [https://brakemanscanner.org/]&#10;  gem &quot;brakeman&quot;, require: false&#10;&#10;  # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]&#10;  gem &quot;rubocop-rails-omakase&quot;, require: false&#10;&#10;  gem 'factory_bot_rails'&#10;end&#10;&#10;gem &quot;rspec-rails&quot;, &quot;~&gt; 8.0&quot;, groups: [:development, :test]&#10;" />
+              <option name="updatedContent" value="source &quot;https://rubygems.org&quot;&#10;&#10;# Bundle edge Rails instead: gem &quot;rails&quot;, github: &quot;rails/rails&quot;, branch: &quot;main&quot;&#10;gem &quot;rails&quot;, &quot;~&gt; 8.0.2&quot;&#10;# Use sqlite3 as the database for Active Record&#10;gem &quot;sqlite3&quot;, &quot;&gt;= 2.1&quot;&#10;# Use the Puma web server [https://github.com/puma/puma]&#10;gem &quot;puma&quot;, &quot;&gt;= 5.0&quot;&#10;&#10;# Windows does not include zoneinfo files, so bundle the tzinfo-data gem&#10;gem &quot;tzinfo-data&quot;, platforms: %i[ mingw mswin x64_mingw jruby ]&#10;&#10;# Use the database-backed adapters for Rails.cache, Active Job, and Action Cable&#10;gem &quot;solid_cache&quot;&#10;gem &quot;solid_queue&quot;&#10;gem &quot;solid_cable&quot;&#10;&#10;# Reduces boot times through caching; required in config/boot.rb&#10;gem &quot;bootsnap&quot;, require: false&#10;&#10;# Deploy this application anywhere as a Docker container [https://kamal-deploy.org]&#10;gem &quot;kamal&quot;, require: false&#10;&#10;# Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]&#10;gem &quot;thruster&quot;, require: false&#10;&#10;# Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]&#10;# gem &quot;image_processing&quot;, &quot;~&gt; 1.2&quot;&#10;&#10;# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible&#10;# gem &quot;rack-cors&quot;&#10;&#10;group :development, :test do&#10;  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem&#10;  gem &quot;debug&quot;, platforms: %i[ mri mingw x64_mingw ], require: &quot;debug/prelude&quot;&#10;&#10;  # Static analysis for security vulnerabilities [https://brakemanscanner.org/]&#10;  gem &quot;brakeman&quot;, require: false&#10;&#10;  # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]&#10;  gem &quot;rubocop-rails-omakase&quot;, require: false&#10;&#10;  gem 'factory_bot_rails'&#10;end&#10;&#10;gem &quot;rspec-rails&quot;, &quot;~&gt; 8.0&quot;, groups: [:development, :test]" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/app/controllers/api/v1/crypto_pairs_controller.rb">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/controllers/api/v1/crypto_pairs_controller.rb" />
+              <option name="originalContent" value="class Api::V1::CryptoPairsController &lt; ApplicationController&#10;  def index&#10;  end&#10;&#10;  def show&#10;  end&#10;&#10;  def create&#10;  end&#10;&#10;  def update&#10;  end&#10;&#10;  def destroy&#10;  end&#10;end&#10;" />
+              <option name="updatedContent" value="module Api&#10;  module V1&#10;    class CryptoPairsController &lt; ApplicationController&#10;      before_action :set_crypto_pair, only: [:show, :update, :destroy]&#10;&#10;      def index&#10;        @crypto_pairs = CryptoPair.all&#10;        render json: @crypto_pairs&#10;      end&#10;&#10;      def show&#10;        render json: @crypto_pair&#10;      end&#10;&#10;      def create&#10;        @crypto_pair = CryptoPair.new(crypto_pair_params)&#10;&#10;        if @crypto_pair.save&#10;          render json: @crypto_pair, status: :created&#10;        else&#10;          render json: @crypto_pair.errors, status: :unprocessable_entity&#10;        end&#10;      end&#10;&#10;      def update&#10;        if @crypto_pair.update(crypto_pair_params)&#10;          render json: @crypto_pair&#10;        else&#10;          render json: @crypto_pair.errors, status: :unprocessable_entity&#10;        end&#10;      end&#10;&#10;      def destroy&#10;        @crypto_pair.destroy&#10;        head :no_content&#10;      end&#10;&#10;      private&#10;&#10;      def set_crypto_pair&#10;        @crypto_pair = CryptoPair.find(params[:id])&#10;      rescue ActiveRecord::RecordNotFound&#10;        render json: { error: 'Crypto pair not found' }, status: :not_found&#10;      end&#10;&#10;      def crypto_pair_params&#10;        params.require(:crypto_pair).permit(:base_currency, :quote_currency, :status)&#10;      end&#10;    end&#10;  end&#10;end" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/app/controllers/api/v1/crypto_prices_controller.rb">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/controllers/api/v1/crypto_prices_controller.rb" />
+              <option name="originalContent" value="class Api::V1::CryptoPricesController &lt; ApplicationController&#10;  def latest&#10;  end&#10;&#10;  def update&#10;  end&#10;end&#10;" />
+              <option name="updatedContent" value="module Api&#10;  module V1&#10;    class CryptoPricesController &lt; ApplicationController&#10;      def latest&#10;        pair = CryptoPair.find_by!(symbol: params[:symbol])&#10;        price = pair.latest_price&#10;        &#10;        if price&#10;          render json: { symbol: pair.symbol, price: price, timestamp: pair.crypto_prices.latest_by_pair&amp;.timestamp }&#10;        else&#10;          render json: { error: 'No price data available' }, status: :not_found&#10;        end&#10;      end&#10;&#10;      def update_random&#10;        pair = CryptoPair.find_by!(symbol: params[:symbol])&#10;        price = CryptoPrice.create!(&#10;          crypto_pair: pair,&#10;          price: CryptoPrice.random_price_for_pair(pair.symbol),&#10;          timestamp: Time.current&#10;        )&#10;&#10;        render json: { symbol: pair.symbol, price: price.price, timestamp: price.timestamp }, status: :created&#10;      end&#10;&#10;      private&#10;&#10;      def crypto_price_params&#10;        params.require(:crypto_price).permit(:price)&#10;      end&#10;    end&#10;  end&#10;end" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/app/models/crypto_pair.rb">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/models/crypto_pair.rb" />
+              <option name="originalContent" value="class CryptoPair &lt; ApplicationRecord&#10;end&#10;" />
+              <option name="updatedContent" value="class CryptoPair &lt; ApplicationRecord&#10;  has_many :crypto_prices, dependent: :destroy&#10;  has_many :orders, dependent: :restrict_with_error&#10;&#10;  validates :base_currency, presence: true&#10;  validates :quote_currency, presence: true&#10;  validates :status, presence: true, inclusion: { in: %w[active inactive] }&#10;  &#10;  def symbol&#10;    &quot;#{base_currency}-#{quote_currency}&quot;&#10;  end&#10;&#10;  def latest_price&#10;    crypto_prices.order(timestamp: :desc).first&amp;.price&#10;  end&#10;end" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/app/models/order.rb">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/models/order.rb" />
+              <option name="originalContent" value="class Order &lt; ApplicationRecord&#10;end&#10;" />
+              <option name="updatedContent" value="class Order &lt; ApplicationRecord&#10;  belongs_to :crypto_pair&#10;&#10;  validates :quantity, presence: true, numericality: { greater_than: 0 }&#10;  validates :status, presence: true, inclusion: { in: %w[pending accepted rejected] }&#10;  validates :order_type, presence: true, inclusion: { in: %w[market] }&#10;  &#10;  scope :open_orders, -&gt; { where(status: 'pending') }&#10;  &#10;  def accept!&#10;    update!(status: 'accepted')&#10;  end&#10;  &#10;  def reject!&#10;    update!(status: 'rejected')&#10;  end&#10;end" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/config/database.env">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/config/database.env" />
+              <option name="updatedContent" value="DATABASE_HOST=localhost&#10;DATABASE_USER=postgres&#10;DATABASE_PASSWORD=postgres&#10;DATABASE_NAME=crypto_trading" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/db/migrate/20250810170051_create_orders.rb">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/db/migrate/20250810170051_create_orders.rb" />
+              <option name="originalContent" value="class CreateOrders &lt; ActiveRecord::Migration[5.2]&#10;  def change&#10;    create_table :orders do |t|&#10;      t.string :product&#10;      t.integer :quantity&#10;      t.decimal :price&#10;&#10;      t.timestamps&#10;    end&#10;  end&#10;end&#10;" />
+              <option name="updatedContent" value="class CreateOrders &lt; ActiveRecord::Migration[5.2]&#10;  def change&#10;    create_table :orders do |t|&#10;      t.references :crypto_pair, foreign_key: true&#10;      t.decimal :quantity, precision: 18, scale: 8, null: false&#10;      t.string :order_type, null: false, default: 'market'&#10;      t.string :status, null: false, default: 'pending'&#10;      t.decimal :execution_price, precision: 18, scale: 8&#10;&#10;      t.timestamps&#10;    end&#10;&#10;    add_index :orders, :status&#10;  end&#10;end" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/db/migrate/20250810183545_create_crypto_pairs.rb">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/db/migrate/20250810183545_create_crypto_pairs.rb" />
+              <option name="originalContent" value="class CreateCryptoPairs &lt; ActiveRecord::Migration[5.2]&#10;  def change&#10;    create_table :crypto_pairs do |t|&#10;      t.string :base_currency&#10;      t.string :quote_currency&#10;      t.string :status&#10;&#10;      t.timestamps&#10;    end&#10;  end&#10;end&#10;" />
+              <option name="updatedContent" value="class CreateCryptoPairs &lt; ActiveRecord::Migration[5.2]&#10;  def change&#10;    create_table :crypto_pairs do |t|&#10;      t.string :base_currency, null: false&#10;      t.string :quote_currency, null: false&#10;      t.string :status, null: false, default: 'active'&#10;&#10;      t.timestamps&#10;    end&#10;&#10;    add_index :crypto_pairs, [:base_currency, :quote_currency], unique: true&#10;    add_index :crypto_pairs, :status&#10;  end&#10;end" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/db/migrate/20250810183553_create_crypto_prices.rb">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/db/migrate/20250810183553_create_crypto_prices.rb" />
+              <option name="originalContent" value="class CreateCryptoPrices &lt; ActiveRecord::Migration[5.2]&#10;  def change&#10;    create_table :crypto_prices do |t|&#10;      t.references :crypto_pair, foreign_key: true&#10;      t.decimal :price&#10;      t.datetime :timestamp&#10;&#10;      t.timestamps&#10;    end&#10;  end&#10;end&#10;" />
+              <option name="updatedContent" value="class CreateCryptoPrices &lt; ActiveRecord::Migration[5.2]&#10;  def change&#10;    create_table :crypto_prices do |t|&#10;      t.references :crypto_pair, null: false, foreign_key: true&#10;      t.decimal :price, precision: 18, scale: 8, null: false&#10;      t.datetime :timestamp, null: false&#10;&#10;      t.timestamps&#10;    end&#10;&#10;    add_index :crypto_prices, [:crypto_pair_id, :timestamp]&#10;  end&#10;end" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/entrypoint.sh">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/entrypoint.sh" />
+              <option name="updatedContent" value="#!/bin/bash&#10;set -e&#10;&#10;# Remove a potentially pre-existing server.pid for Rails.&#10;rm -f /app/tmp/pids/server.pid&#10;&#10;# Wait for database to be ready&#10;until pg_isready -h db -p 5432; do&#10;  echo &quot;Waiting for postgres to be ready...&quot;&#10;  sleep 2&#10;done&#10;&#10;# Then exec the container's main process (what's set as CMD in the Dockerfile).&#10;exec &quot;$@&quot;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

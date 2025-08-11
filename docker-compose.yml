@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+      - storage:/rails/storage
+    working_dir: /rails
+    environment:
+      - RAILS_ENV=development
+      - RAILS_MAX_THREADS=5
+    command: bin/rails server -b 0.0.0.0
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+volumes:
+  bundle_cache:
+  storage:
