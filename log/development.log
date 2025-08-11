@@ -192,3 +192,221 @@ Started GET "/icon.png" for 127.0.0.1 at 2025-08-11 09:28:29 +0530
   
 ActionController::RoutingError (No route matches [GET] "/icon.png"):
   
+Started GET "/prices" for 127.0.0.1 at 2025-08-11 09:33:23 +0530
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='CryptoExchange'*/[0m
+Processing by PricesController#index as */*
+  [1m[36mCryptoPrice Load (0.7ms)[0m  [1m[34mSELECT "crypto_prices".* FROM "crypto_prices" /*action='index',application='CryptoExchange',controller='prices'*/[0m
+  ↳ app/controllers/prices_controller.rb:7:in 'PricesController#index'
+Completed 200 OK in 26ms (Views: 0.5ms | ActiveRecord: 1.0ms (1 query, 0 cached) | GC: 7.8ms)
+
+
+Started PUT "/prices/BTC-USDT" for 127.0.0.1 at 2025-08-11 09:33:31 +0530
+Processing by PricesController#update as */*
+  Parameters: {"price" => 12390123.123, "id" => "BTC-USDT"}
+  [1m[36mCryptoPrice Load (0.2ms)[0m  [1m[34mSELECT "crypto_prices".* FROM "crypto_prices" WHERE "crypto_prices"."instrument_name" = 'BTC-USDT' ORDER BY "crypto_prices"."timestamp" DESC LIMIT 1 /*action='update',application='CryptoExchange',controller='prices'*/[0m
+  ↳ app/controllers/prices_controller.rb:28:in 'PricesController#get_instrument_detail'
+Completed 404 Not Found in 7ms (Views: 0.1ms | ActiveRecord: 0.5ms (1 query, 0 cached) | GC: 0.4ms)
+
+
+Started GET "/orders/open" for 127.0.0.1 at 2025-08-11 09:33:43 +0530
+Processing by OrdersController#show as */*
+  Parameters: {"id" => "open"}
+  [1m[36mOrderBook Load (0.1ms)[0m  [1m[34mSELECT "order_books".* FROM "order_books" WHERE "order_books"."status" = 'open' /*action='show',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:27:in 'OrdersController#show'
+Completed 200 OK in 5ms (Views: 1.1ms | ActiveRecord: 0.3ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started PUT "/orders/1" for 127.0.0.1 at 2025-08-11 09:33:55 +0530
+Processing by OrdersController#update as */*
+  Parameters: {"status" => "filled", "id" => "1", "order" => {"status" => "filled"}}
+  [1m[36mOrderBook Load (0.1ms)[0m  [1m[34mSELECT "order_books".* FROM "order_books" WHERE "order_books"."id" = 1 LIMIT 1 /*action='update',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:51:in 'OrdersController#get_order_detail'
+Completed 404 Not Found in 3ms (Views: 0.1ms | ActiveRecord: 0.6ms (1 query, 0 cached) | GC: 0.6ms)
+
+
+Started POST "/orders" for 127.0.0.1 at 2025-08-11 09:34:04 +0530
+Processing by OrdersController#create as */*
+  Parameters: {"instrument_name" => "BTC-USDT", "order_type" => "market", "quantity" => 1.202, "order" => {"instrument_name" => "BTC-USDT", "order_type" => "market", "quantity" => 1.202}}
+[31mUnpermitted parameter: :order. Context: { controller: OrdersController, action: create, request: #<ActionDispatch::Request:0x000000011f793c20>, params: {"instrument_name" => "BTC-USDT", "order_type" => "market", "quantity" => 1.202, "controller" => "orders", "action" => "create", "order" => {"instrument_name" => "BTC-USDT", "order_type" => "market", "quantity" => 1.202}} }[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*action='create',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:17:in 'OrdersController#create'
+  [1m[36mOrderBook Create (1.1ms)[0m  [1m[32mINSERT INTO "order_books" ("instrument_name", "quantity", "order_type", "status", "created_at", "updated_at") VALUES ('BTC-USDT', 1.202, 'market', 'open', '2025-08-11 04:04:04.868727', '2025-08-11 04:04:04.868727') RETURNING "id" /*action='create',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:17:in 'OrdersController#create'
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mCOMMIT TRANSACTION /*action='create',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:17:in 'OrdersController#create'
+Completed 201 Created in 11ms (Views: 0.2ms | ActiveRecord: 1.6ms (1 query, 0 cached) | GC: 1.3ms)
+
+
+Started PUT "/orders/1" for 127.0.0.1 at 2025-08-11 09:34:08 +0530
+Processing by OrdersController#update as */*
+  Parameters: {"status" => "filled", "id" => "1", "order" => {"status" => "filled"}}
+  [1m[36mOrderBook Load (0.1ms)[0m  [1m[34mSELECT "order_books".* FROM "order_books" WHERE "order_books"."id" = 1 LIMIT 1 /*action='update',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:51:in 'OrdersController#get_order_detail'
+[31mUnpermitted parameters: :id, :order. Context: { controller: OrdersController, action: update, request: #<ActionDispatch::Request:0x00000001238301e8>, params: {"status" => "filled", "controller" => "orders", "action" => "update", "id" => "1", "order" => {"status" => "filled"}} }[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*action='update',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:32:in 'OrdersController#update'
+  [1m[36mOrderBook Update (1.0ms)[0m  [1m[33mUPDATE "order_books" SET "status" = 'filled', "updated_at" = '2025-08-11 04:04:08.930222' WHERE "order_books"."id" = 1 /*action='update',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:32:in 'OrdersController#update'
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT TRANSACTION /*action='update',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:32:in 'OrdersController#update'
+Completed 200 OK in 5ms (Views: 0.2ms | ActiveRecord: 1.2ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/orders" for 127.0.0.1 at 2025-08-11 09:34:16 +0530
+Processing by OrdersController#index as */*
+  [1m[36mOrderBook Load (0.2ms)[0m  [1m[34mSELECT "order_books".* FROM "order_books" /*action='index',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:11:in 'OrdersController#index'
+Completed 200 OK in 2ms (Views: 1.7ms | ActiveRecord: 0.2ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started DELETE "/orders/1" for 127.0.0.1 at 2025-08-11 09:34:19 +0530
+Processing by OrdersController#destroy as */*
+  Parameters: {"id" => "1"}
+  [1m[36mOrderBook Load (0.2ms)[0m  [1m[34mSELECT "order_books".* FROM "order_books" WHERE "order_books"."id" = 1 LIMIT 1 /*action='destroy',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:51:in 'OrdersController#get_order_detail'
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*action='destroy',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:41:in 'OrdersController#destroy'
+  [1m[36mOrderBook Destroy (1.1ms)[0m  [1m[31mDELETE FROM "order_books" WHERE "order_books"."id" = 1 /*action='destroy',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:41:in 'OrdersController#destroy'
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT TRANSACTION /*action='destroy',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:41:in 'OrdersController#destroy'
+Completed 200 OK in 4ms (Views: 0.1ms | ActiveRecord: 1.4ms (2 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/orders" for 127.0.0.1 at 2025-08-11 09:34:23 +0530
+Processing by OrdersController#index as */*
+  [1m[36mOrderBook Load (0.1ms)[0m  [1m[34mSELECT "order_books".* FROM "order_books" /*action='index',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:11:in 'OrdersController#index'
+Completed 200 OK in 2ms (Views: 1.3ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/orders/open" for 127.0.0.1 at 2025-08-11 09:34:29 +0530
+Processing by OrdersController#show as */*
+  Parameters: {"id" => "open"}
+  [1m[36mOrderBook Load (0.1ms)[0m  [1m[34mSELECT "order_books".* FROM "order_books" WHERE "order_books"."status" = 'open' /*action='show',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:27:in 'OrdersController#show'
+Completed 200 OK in 2ms (Views: 1.5ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/orders" for 127.0.0.1 at 2025-08-11 09:34:33 +0530
+Processing by OrdersController#create as */*
+  Parameters: {"instrument_name" => "BTC-USDT", "order_type" => "market", "quantity" => 1.202, "order" => {"instrument_name" => "BTC-USDT", "order_type" => "market", "quantity" => 1.202}}
+[31mUnpermitted parameter: :order. Context: { controller: OrdersController, action: create, request: #<ActionDispatch::Request:0x0000000123b13720>, params: {"instrument_name" => "BTC-USDT", "order_type" => "market", "quantity" => 1.202, "controller" => "orders", "action" => "create", "order" => {"instrument_name" => "BTC-USDT", "order_type" => "market", "quantity" => 1.202}} }[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*action='create',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:17:in 'OrdersController#create'
+  [1m[36mOrderBook Create (1.2ms)[0m  [1m[32mINSERT INTO "order_books" ("instrument_name", "quantity", "order_type", "status", "created_at", "updated_at") VALUES ('BTC-USDT', 1.202, 'market', 'open', '2025-08-11 04:04:33.662848', '2025-08-11 04:04:33.662848') RETURNING "id" /*action='create',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:17:in 'OrdersController#create'
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT TRANSACTION /*action='create',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:17:in 'OrdersController#create'
+Completed 201 Created in 4ms (Views: 0.2ms | ActiveRecord: 1.3ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/orders/open" for 127.0.0.1 at 2025-08-11 09:34:36 +0530
+Processing by OrdersController#show as */*
+  Parameters: {"id" => "open"}
+  [1m[36mOrderBook Load (0.1ms)[0m  [1m[34mSELECT "order_books".* FROM "order_books" WHERE "order_books"."status" = 'open' /*action='show',application='CryptoExchange',controller='orders'*/[0m
+  ↳ app/controllers/orders_controller.rb:27:in 'OrdersController#show'
+Completed 200 OK in 2ms (Views: 1.5ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/prices" for 127.0.0.1 at 2025-08-11 09:34:45 +0530
+Processing by PricesController#index as */*
+  [1m[36mCryptoPrice Load (0.1ms)[0m  [1m[34mSELECT "crypto_prices".* FROM "crypto_prices" /*action='index',application='CryptoExchange',controller='prices'*/[0m
+  ↳ app/controllers/prices_controller.rb:7:in 'PricesController#index'
+Completed 200 OK in 2ms (Views: 1.4ms | ActiveRecord: 0.1ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started PUT "/prices/BTC-USDT" for 127.0.0.1 at 2025-08-11 09:34:49 +0530
+Processing by PricesController#update as */*
+  Parameters: {"price" => 12390123.123, "id" => "BTC-USDT"}
+  [1m[36mCryptoPrice Load (0.2ms)[0m  [1m[34mSELECT "crypto_prices".* FROM "crypto_prices" WHERE "crypto_prices"."instrument_name" = 'BTC-USDT' ORDER BY "crypto_prices"."timestamp" DESC LIMIT 1 /*action='update',application='CryptoExchange',controller='prices'*/[0m
+  ↳ app/controllers/prices_controller.rb:28:in 'PricesController#get_instrument_detail'
+Completed 404 Not Found in 2ms (Views: 0.1ms | ActiveRecord: 0.2ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/prices" for 127.0.0.1 at 2025-08-11 09:36:31 +0530
+Processing by PricesController#index as */*
+  [1m[36mCryptoPrice Load (1.0ms)[0m  [1m[34mSELECT "crypto_prices".* FROM "crypto_prices" /*action='index',application='CryptoExchange',controller='prices'*/[0m
+  ↳ app/controllers/prices_controller.rb:7:in 'PricesController#index'
+Completed 200 OK in 3ms (Views: 0.6ms | ActiveRecord: 1.0ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/prices" for ::1 at 2025-08-11 09:38:28 +0530
+Processing by PricesController#create as */*
+  Parameters: {"instrument_name" => "BTC-USD", "price" => 45000.5}
+Completed 422 Unprocessable Content in 5ms (Views: 2.0ms | ActiveRecord: 0.7ms (0 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/prices" for ::1 at 2025-08-11 09:39:02 +0530
+Processing by PricesController#create as */*
+  Parameters: {"instrument_name" => "BTC-USD", "price" => 45000.5}
+Completed 422 Unprocessable Content in 1ms (Views: 0.3ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/prices" for ::1 at 2025-08-11 09:40:06 +0530
+Processing by PricesController#create as */*
+  Parameters: {"instrument_name" => "BTC-USD", "price" => 45000.5}
+Completed 422 Unprocessable Content in 3ms (Views: 0.2ms | ActiveRecord: 0.7ms (0 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/prices" for ::1 at 2025-08-11 09:41:54 +0530
+Processing by PricesController#create as */*
+  Parameters: {"instrument_name" => "BTC-USD", "price" => 45000.5}
+Completed 500 Internal Server Error in 1ms (ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.5ms)
+
+
+  
+NameError (undefined local variable or method 'instrument_create_params' for an instance of PricesController):
+  
+app/controllers/prices_controller.rb:16:in 'PricesController#create'
+Started POST "/prices" for ::1 at 2025-08-11 09:42:22 +0530
+Processing by PricesController#create as */*
+  Parameters: {"instrument_name" => "BTC-USD", "price" => 45000.5}
+Completed 422 Unprocessable Content in 3ms (Views: 0.2ms | ActiveRecord: 0.7ms (0 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/prices" for ::1 at 2025-08-11 09:42:47 +0530
+Processing by PricesController#create as */*
+  Parameters: {"instrument_name" => "BTC-USD", "price" => 45000.5}
+Completed 422 Unprocessable Content in 4ms (Views: 0.3ms | ActiveRecord: 0.7ms (0 queries, 0 cached) | GC: 0.1ms)
+
+
+Started POST "/prices" for ::1 at 2025-08-11 09:43:08 +0530
+Processing by PricesController#create as */*
+  Parameters: {"instrument_name" => "BTC-USDT", "price" => 45000.5}
+Completed 422 Unprocessable Content in 1ms (Views: 0.3ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/prices" for ::1 at 2025-08-11 09:43:21 +0530
+Processing by PricesController#create as */*
+  Parameters: {"instrument_name" => "BTC-USDT", "price" => 45000.5}
+Completed 422 Unprocessable Content in 4ms (Views: 0.2ms | ActiveRecord: 0.8ms (0 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/prices" for ::1 at 2025-08-11 09:43:37 +0530
+  
+SyntaxError (/Users/vignesh.js/personal/personal-codes/trading-application-rails/app/controllers/prices_controller.rb:27: syntax errors found
+  [2m25 | [m
+  [2m26 | [m    def instrument_create_params
+[1;31m> [m[2m27 | [m... Time.now)
+  [2m   | [m    [1;31m^~~~[m unexpected constant, expecting end-of-input
+  [2m   | [m    [1;31m^~~~[m unexpected constant; expected a `)` to close the arguments
+  [2m   | [m            [1;31m^[m unexpected ')', ignoring it
+  [2m   | [m            [1;31m^[m unexpected ')', expecting end-of-input
+  [2m28 | [m    end
+  [2m29 | [m
+):
+  
+app/controllers/prices_controller.rb:27: syntax errors found
+Started POST "/prices" for ::1 at 2025-08-11 09:43:51 +0530
+Processing by PricesController#create as */*
+  Parameters: {"instrument_name" => "BTC-USDT", "price" => 45000.5}
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*action='create',application='CryptoExchange',controller='prices'*/[0m
+  ↳ app/controllers/prices_controller.rb:24:in 'PricesController#create'
+  [1m[36mCryptoPrice Create (0.4ms)[0m  [1m[32mINSERT INTO "crypto_prices" ("instrument_name", "price", "timestamp", "created_at", "updated_at") VALUES ('BTC-USDT', 45000.5, '2025-08-11 04:13:51.936895', '2025-08-11 04:13:51.939118', '2025-08-11 04:13:51.939118') RETURNING "id" /*action='create',application='CryptoExchange',controller='prices'*/[0m
+  ↳ app/controllers/prices_controller.rb:24:in 'PricesController#create'
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT TRANSACTION /*action='create',application='CryptoExchange',controller='prices'*/[0m
+  ↳ app/controllers/prices_controller.rb:24:in 'PricesController#create'
+Completed 201 Created in 4ms (Views: 0.1ms | ActiveRecord: 1.2ms (1 query, 0 cached) | GC: 0.1ms)
+
+

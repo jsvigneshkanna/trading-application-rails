@@ -11,7 +11,23 @@ class PricesController < ApplicationController
     def show
         render json: @instrument_detail
     end
-    
+
+    def create
+        @instrument = CryptoPrice.new(
+            instrument_name: params[:instrument_name],
+            price: params[:price],
+            timestamp: Time.current
+        )
+
+        p "test1"
+
+        if @instrument.save
+            render json: @instrument, status: :created
+        else
+            render json: @instrument.errors, status: :unprocessable_entity
+        end
+    end
+
     # UPDATE/PUT /prices/:instument_name
     def update
         if @instrument_detail.nil?
